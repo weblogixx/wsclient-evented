@@ -1,0 +1,61 @@
+{
+  "name": "wsclient-evented",
+  "version": "0.0.0",
+  "description": "Simple Websocket Client with Event support",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rimraf dist/*",
+    "dist": "webpack --env=dist",
+    "lint": "eslint ./src",
+    "posttest": "npm run lint",
+    "serve": "node server.js --env=dev",
+    "serve:dist": "node server.js --env=dist",
+    "start": "npm run serve",
+    "test": "karma start",
+    "test:watch": "karma start --autoWatch=true --singleRun=false",
+    "release:major": "npm version major && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:patch": "npm version patch && npm publish && git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://weblogixx@github.com/weblogixx/wsclient-evented.git"
+  },
+  "keywords": [
+    "websocket",
+    "websocket client",
+    "event"
+  ],
+  "author": "Christian Schilling (cs@weblogixx.de)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/weblogixx/wsclient-evented/issues"
+  },
+  "homepage": "https://github.com/weblogixx/wsclient-evented#readme",
+  "devDependencies": {
+    "babel-core": "^5.8.22",
+    "babel-loader": "^5.3.2",
+    "chai": "^3.2.0",
+    "eslint": "^1.2.1",
+    "eslint-loader": "^1.0.0",
+    "isparta-loader": "^1.0.0",
+    "karma": "^0.13.9",
+    "karma-chai": "^0.1.0",
+    "karma-coverage": "^0.5.3",
+    "karma-mocha": "^0.2.0",
+    "karma-mocha-reporter": "^1.1.1",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "karma-phantomjs-shim": "^1.1.1",
+    "karma-sourcemap-loader": "^0.3.5",
+    "karma-webpack": "^1.7.0",
+    "karma-websocket-server": "^1.0.0",
+    "minimist": "^1.2.0",
+    "mocha": "^2.2.5",
+    "phantomjs": "^1.9.18",
+    "rimraf": "^2.4.3",
+    "webpack": "^1.12.0"
+  },
+  "dependencies": {
+    "wolfy87-eventemitter": "^4.3.0"
+  }
+}

@@ -1,2 +1,2 @@
 # wsclient-evented
-A simple client websocket implementation using events
+> A simple Websocket implementation for easier client side usage.
