@@ -4,7 +4,7 @@ var webpackCfg = require('./webpack.config');
 module.exports = function(config) {
   config.set({
     basePath: '',
-    browsers: [ 'PhantomJS' ],
+    browsers: [ 'Chrome' ],
     files: [
       'test/loadtests.js'
     ],
@@ -37,12 +37,31 @@ module.exports = function(config) {
         server.on('request', (req) => {
 
           if(req.requestedProtocols.indexOf(CURRENT_PROTOCOL) === -1) {
-            req.reject(501, `Wanted protocol is not implemented. Available protocols: ${CURRENT_PROTOCOL}`);
+            req.reject(404, `Wanted protocol is not implemented. Available protocols: ${CURRENT_PROTOCOL}`);
             return;
           }
 
           let connection = req.accept(CURRENT_PROTOCOL, req.origin);
-          console.log(connection);
+          connection.on('message', (msg) => {
+
+            if(msg.type === 'utf8') {
+
+              let payload = JSON.parse(msg.utf8Data);
+
+              switch(typeof payload) {
+                case 'string':
+                  connection.sendUTF(JSON.stringify(`${payload} - response`));
+                  break;
+
+                case 'object':
+                default:
+                  connection.sendUTF(JSON.stringify({
+                    type: `${payload.type}-response`,
+                    payload: payload.payload
+                  }));
+              }
+            }
+          });
         });
       }
     },

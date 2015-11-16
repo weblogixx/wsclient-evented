@@ -1,2 +1,5 @@
 # wsclient-evented
-> A simple Websocket implementation for easier client side usage.
+> A (very) simple Websocket client for easier usage.
+
+## What is it for?
+wsclient-evented is just a very easy wrapper for the native websocket client.
