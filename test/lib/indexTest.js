@@ -13,14 +13,17 @@ describe('when creating a new WsClientEvented instance', () => {
   it('should be able to run with just the url', () => {
 
     let instance = new WsClientEvented(wsUrl, '', {
-      autoOpen: false
+      autoOpen: false,
+      autoReconnect: false
     });
 
     expect(instance.url).to.equal(wsUrl);
     expect(instance.protocols).to.deep.equal('');
     expect(instance.settings).to.deep.equal({
       autoOpen: false,
+      autoReconnect: false,
       binaryType: 'blob',
+      maxReconnects: null,
       reconnectInterval: 250,
       onBeforeWsOpen: null,
       onWsOpen: null,
@@ -41,7 +44,8 @@ describe('when creating a new WsClientEvented instance', () => {
 
     let instance = new WsClientEvented(wsUrl, 'test', {
       debug: true,
-      autoOpen: false
+      autoOpen: false,
+      autoReconnect: false
     });
 
     expect(instance.url).to.equal(wsUrl);
@@ -49,7 +53,9 @@ describe('when creating a new WsClientEvented instance', () => {
     expect(instance.settings).to.deep.equal({
       debug: true,
       autoOpen: false,
+      autoReconnect: false,
       binaryType: 'blob',
+      maxReconnects: null,
       reconnectInterval: 250,
       onBeforeWsOpen: null,
       onWsOpen: null,
@@ -60,12 +66,13 @@ describe('when creating a new WsClientEvented instance', () => {
   });
 });
 
-describe('when opening a websocket instance', () => {
+describe('when opening a websocket', () => {
 
   let instance;
   beforeEach(() => {
     instance = new WsClientEvented(wsUrl, wsProtocol, {
-      autoOpen: false
+      autoOpen: false,
+      autoReconnect: false
     });
   });
 
@@ -109,6 +116,7 @@ describe('when opening a websocket instance', () => {
 
     it('should fire the the onBeforeWsOpen event', (done) => {
       new WsClientEvented(wsUrl, wsProtocol, {
+        autoReconnect: false,
         onBeforeWsOpen: (e, instance) => {
           expect(instance).to.be.instanceOf(WsClientEvented);
           done();
@@ -118,6 +126,7 @@ describe('when opening a websocket instance', () => {
 
     it('should fire the the onWsOpen event', (done) => {
       new WsClientEvented(wsUrl, wsProtocol, {
+        autoReconnect: false,
         onWsOpen: (e, instance) => {
           expect(e.type).to.equal('open');
           expect(e.target.readyState).to.equal(1);
@@ -130,6 +139,7 @@ describe('when opening a websocket instance', () => {
     it('should fire the onWsMessage event', (done) => {
 
       new WsClientEvented(wsUrl, wsProtocol, {
+        autoReconnect: false,
         onWsOpen: (e, instance) => {
           instance.ws.send(JSON.stringify('message'));
         },
@@ -143,6 +153,7 @@ describe('when opening a websocket instance', () => {
     it('should fire the the onWsClose event', (done) => {
 
       let instance = new WsClientEvented(wsUrl, wsProtocol, {
+        autoReconnect: false,
         onWsClose: (e, instance) => {
           expect(e.type).to.equal('close');
           expect(e.target.readyState).to.equal(3);
@@ -195,18 +206,7 @@ describe('when sending a message', () => {
     expect(instance.send('x', 'y')).to.be.equal(instance);
   });
 
-  it('should automatically open the socket if it is not available yet', (done) => {
-
-    instance.emitter.addListener('onWsMessage', () => {
-      expect(instance.ws).to.be.instanceOf(WebSocket);
-      done();
-    });
-
-    expect(instance.ws).to.be.null;
-    instance.send('event', 'data');
-  });
-
-  it('should just send the data over the opened socket if it is already connected', (done) => {
+  it('should send the data over the open socket if it is connected', (done) => {
 
     instance.open();
     window.setTimeout(() => {
@@ -217,7 +217,9 @@ describe('when sending a message', () => {
 
   it('should automatically emit an event for any event type when it is received', (done) => {
 
-    instance.emitter.addListener('test-response', (response) => {
+    let newInstance = new WsClientEvented(wsUrl, wsProtocol);
+    newInstance.emitter.addListener('test-response', (evt, response) => {
+      expect(evt).to.be.instanceOf(MessageEvent);
       expect(response).to.deep.equal({
         type: 'test-response',
         payload: {
@@ -228,8 +230,61 @@ describe('when sending a message', () => {
       done();
     });
 
-    instance.send('test', {
+    newInstance.send('test', {
       my: 'data'
+    });
+  });
+});
+
+describe('when adding or removing listeners', () => {
+
+  let instance;
+  beforeEach(() => {
+    instance = new WsClientEvented(wsUrl, wsProtocol, {
+      autoOpen: false,
+      autoReconnect: false
+    });
+  });
+
+  describe('when adding listeners via addListener', () => {
+
+    it('should use a fluent interface', () => {
+      expect(instance.addListener('test', function() {})).to.be.equal(instance);
+    });
+
+    it('should listen for the occured event', (done) => {
+
+      instance.addListener('mymsg-response', (evt, response) => {
+        expect(evt).to.be.instanceOf(MessageEvent);
+        expect(response).to.deep.equal({
+          type: 'mymsg-response',
+          payload: {
+            data: 'test'
+          }
+        });
+        done();
+      });
+
+      instance.open();
+      instance.send('mymsg', {
+        data: 'test'
+      });
+    });
+  });
+
+  describe('when removing listeners via removeListener', () => {
+
+    it('should use a fluent interface', () => {
+      expect(instance.removeListener('test')).to.be.equal(instance);
+    });
+
+    it('should remove the listener for the given event', () => {
+
+      instance.addListener('mymsg-response', () => {});
+      expect(instance.emitter.listeners('mymsg-response')).to.have.length(1);
+
+      instance.removeListener('mymsg-response');
+      expect(instance.emitter.listeners('mymsg-response')).to.have.length(0);
     });
   });
 });
