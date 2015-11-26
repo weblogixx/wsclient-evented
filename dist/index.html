@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>wsclient-evented Demo</title>
+    <script src="browser.js"></script>
+  </head>
+  <body>
+    Hello!
+    <script>
+    var ws = new WsClientEvented('ws://localhost:9999', 'wsclient-evented-protocol', {
+      debug: true,
+      onBeforeWsOpen: function() {
+        console.log('onBeforeWsOpen called!');
+      },
+      onWsTimeout: function() {
+        console.log('onWsTimeout called!');
+      }
+    });
+    ws
+      .addListener('test-response', function() {
+        console.log(arguments);
+      })
+      .send('test', {
+        ping: 'pong'
+      });
+    console.log(ws);
+    </script>
+  </body>
+</html>

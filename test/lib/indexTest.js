@@ -18,18 +18,24 @@ describe('when creating a new WsClientEvented instance', () => {
     });
 
     expect(instance.url).to.equal(wsUrl);
-    expect(instance.protocols).to.deep.equal('');
+    expect(instance.protocols).to.be.null;
     expect(instance.settings).to.deep.equal({
       autoOpen: false,
       autoReconnect: false,
+      debug: false,
       binaryType: 'blob',
       maxReconnects: null,
-      reconnectInterval: 250,
+      maxSendTries: 10,
+      maxReconnectTimeout: 5000,
+      reconnectInterval: 1000,
+      reconnectDecay: 1.5,
+      timeoutInterval: 5000,
       onBeforeWsOpen: null,
       onWsOpen: null,
       onWsMessage: null,
       onWsError: null,
-      onWsClose: null
+      onWsClose: null,
+      onWsTimeout: null
     });
   });
 
@@ -38,6 +44,8 @@ describe('when creating a new WsClientEvented instance', () => {
     let instance = new WsClientEvented(wsUrl, 'test');
     expect(instance.url).to.equal(wsUrl);
     expect(instance.protocols).to.deep.equal('test');
+
+    instance.close();
   });
 
   it('should be able to override the default options with the provided ones', () => {
@@ -51,18 +59,25 @@ describe('when creating a new WsClientEvented instance', () => {
     expect(instance.url).to.equal(wsUrl);
     expect(instance.protocols).to.deep.equal('test');
     expect(instance.settings).to.deep.equal({
-      debug: true,
       autoOpen: false,
       autoReconnect: false,
+      debug: true,
       binaryType: 'blob',
       maxReconnects: null,
-      reconnectInterval: 250,
+      maxSendTries: 10,
+      reconnectInterval: 1000,
+      reconnectDecay: 1.5,
+      timeoutInterval: 5000,
+      maxReconnectTimeout: 5000,
       onBeforeWsOpen: null,
       onWsOpen: null,
       onWsMessage: null,
       onWsError: null,
-      onWsClose: null
+      onWsClose: null,
+      onWsTimeout: null
     });
+
+    instance.close();
   });
 });
 
@@ -74,6 +89,10 @@ describe('when opening a websocket', () => {
       autoOpen: false,
       autoReconnect: false
     });
+  });
+
+  afterEach(() => {
+    instance.close();
   });
 
   it('should use a fluent interface', () => {
@@ -91,6 +110,7 @@ describe('when opening a websocket', () => {
 
     expect(ws.settings.autoOpen).to.be.true;
     expect(ws.ws).to.be.null;
+    ws.close();
   });
 
   it('should set the current websocket', () => {
@@ -112,6 +132,20 @@ describe('when opening a websocket', () => {
     expect(newWs).to.not.equal(oldWs);
   });
 
+  it('should listen for the onWsTimeout event if the connection is not possible', (done) => {
+
+    new WsClientEvented('ws://bogusConnect', null, {
+      debug: true,
+      autoReconnect: false,
+      timeoutInterval: 50,
+      onWsTimeout: (e, instance) => {
+        expect(instance.ws.readyState).to.equal(WebSocket.CLOSED);
+        instance.close();
+        done();
+      }
+    });
+  });
+
   describe('when adding events at the constructor', () => {
 
     it('should fire the the onBeforeWsOpen event', (done) => {
@@ -119,6 +153,7 @@ describe('when opening a websocket', () => {
         autoReconnect: false,
         onBeforeWsOpen: (e, instance) => {
           expect(instance).to.be.instanceOf(WsClientEvented);
+          instance.close();
           done();
         }
       });
@@ -131,6 +166,7 @@ describe('when opening a websocket', () => {
           expect(e.type).to.equal('open');
           expect(e.target.readyState).to.equal(1);
           expect(instance).to.be.instanceOf(WsClientEvented);
+          instance.close();
           done();
         }
       });
@@ -145,6 +181,7 @@ describe('when opening a websocket', () => {
         },
         onWsMessage: () => {
           expect(true).to.be.true;
+          instance.close();
           done();
         }
       });
@@ -156,7 +193,7 @@ describe('when opening a websocket', () => {
         autoReconnect: false,
         onWsClose: (e, instance) => {
           expect(e.type).to.equal('close');
-          expect(e.target.readyState).to.equal(3);
+          expect(e.target.readyState).to.be.within(2, 3);
           expect(instance).to.be.instanceOf(WsClientEvented);
           done();
         }
@@ -198,8 +235,8 @@ describe('when sending a message', () => {
     });
   });
 
-  it('should always require the message type, as well as the payload', () => {
-    expect(instance.send).to.throw(/Must provide type and payload/);
+  it('should always require the message type', () => {
+    expect(instance.send).to.throw(/Must provide an event type/);
   });
 
   it('should use a fluent interface', () => {

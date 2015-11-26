@@ -16,7 +16,6 @@ if(args._.length > 0 && args._.indexOf('start') !== -1) {
 
 // Get available configurations
 var configs = {
-  base: require(path.join(__dirname, 'cfg/base')),
   dist: require(path.join(__dirname, 'cfg/dist')),
   test: require(path.join(__dirname, 'cfg/test'))
 };

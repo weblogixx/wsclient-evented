@@ -1,11 +1,16 @@
 var path = require('path');
 var webpack = require('webpack');
-var _ = require('lodash');
 
-var baseConfig = require('./base');
-
-var config = _.merge({
-  entry: path.join(__dirname, '../lib/index.js'),
+var config = {
+  debug: true,
+  entry: {
+    index: [ path.join(__dirname, '../lib/index.js') ],
+    browser: [ path.join(__dirname, '../lib/browser.js') ]
+  },
+  output: {
+    path: path.join(__dirname, '/../dist'),
+    filename: '[name].js'
+  },
   cache: false,
   devtool: 'sourcemap',
   plugins: [
@@ -17,13 +22,23 @@ var config = _.merge({
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.optimize.AggressiveMergingPlugin(),
     new webpack.NoErrorsPlugin()
-  ]
-}, baseConfig);
-
-config.module.loaders.push({
-  test: /\.(js)$/,
-  loader: 'babel',
-  include: path.join(__dirname, '/../lib')
-});
+  ],
+  module: {
+    preLoaders: [
+      {
+        test: /\.js$/,
+        include: path.join(__dirname, 'lib'),
+        loader: 'eslint-loader'
+      }
+    ],
+    loaders: [
+      {
+        test: /\.(js)$/,
+        loader: 'babel',
+        include: path.join(__dirname, '/../lib')
+      }
+    ]
+  }
+};
 
 module.exports = config;
