@@ -29,7 +29,7 @@ describe('when creating a new WsClientEvented instance', () => {
       maxReconnectTimeout: 5000,
       reconnectInterval: 1000,
       reconnectDecay: 1.5,
-      timeoutInterval: 5000,
+      timeoutInterval: 2000,
       onBeforeWsOpen: null,
       onWsOpen: null,
       onWsMessage: null,
@@ -67,7 +67,7 @@ describe('when creating a new WsClientEvented instance', () => {
       maxSendTries: 10,
       reconnectInterval: 1000,
       reconnectDecay: 1.5,
-      timeoutInterval: 5000,
+      timeoutInterval: 2000,
       maxReconnectTimeout: 5000,
       onBeforeWsOpen: null,
       onWsOpen: null,
@@ -134,12 +134,12 @@ describe('when opening a websocket', () => {
 
   it('should listen for the onWsTimeout event if the connection is not possible', (done) => {
 
-    new WsClientEvented('ws://bogusConnect', null, {
-      debug: true,
+    new WsClientEvented('ws://localhost:9999', null, {
+      debug: false,
       autoReconnect: false,
-      timeoutInterval: 50,
-      onWsTimeout: (e, instance) => {
-        expect(instance.ws.readyState).to.equal(WebSocket.CLOSED);
+      timeoutInterval: 5,
+      onWsTimeout: function(e, instance) {
+        expect(instance).to.be.instanceOf(WsClientEvented);
         instance.close();
         done();
       }
