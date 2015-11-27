@@ -5,7 +5,7 @@
 wsclient-evented is just an easy wrapper for the native WebSocket client.
 It adds some often needed functionality like
 
-- [x] (Relatively) small in size (8.5kb minified)
+- [x] Relative small in size (8.5kb minified)
 - [x] Automatic reconnects when connections get closed
 - [x] Send method automatically opens the connection if it is closed
 - [x] Possibility to listen for any server events without big switch statements in onMessage via facebooks fbemitter
@@ -20,7 +20,7 @@ It adds some often needed functionality like
 - [x] Apple Safari
 - [x] Mozilla Firefox
 - [x] Microsoft Edge
-- [x] Microsoft Internet Explorer (versions 10, 11)
+- [x] Microsoft Internet Explorer (10, 11)
 
 ## Installation
 There are two possibilities to use the client:
