@@ -73,6 +73,7 @@ int reconnectInterval [default: 1000] Delay in ms for reconnect tries
 float reconnectDecay [default 1.5] Factor for reconnects
 int timeoutInterval [default: 2000] Time in ms to wait for connects
 string binaryType [default: blob] Binary type for websocket transmission
+string payloadItemName [default: "payload"] The name of the payload key, used for send
 int maxReconnects [default: null] Maximal amount of reconnects. Set to null for inifinite
 int maxReconnectTimeout [default: 5000] Maximal amount of milliseconds to wait for reconnects
 int maxSendTries [default: 10] Maximal amount of tries for ws send to fail for the same request
