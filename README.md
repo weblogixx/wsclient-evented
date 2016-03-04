@@ -68,6 +68,7 @@ The following options are available:
 ```javascript
 bool autoOpen [default: true] Automatically connect the WebSocket on initialisation?
 bool autoReconnect [default: true] Automatically reconnect the WebSocket if connection is lost?
+bool forceCloseOnReload [default: false] Send a forced close on browser reload?
 bool debug [default: false] Show debug output?
 int reconnectInterval [default: 1000] Delay in ms for reconnect tries
 float reconnectDecay [default 1.5] Factor for reconnects
