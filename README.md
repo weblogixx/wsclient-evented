@@ -9,11 +9,15 @@ It adds some often needed functionality like
 - [x] Automatic reconnects when connections get closed
 - [x] Send method automatically opens the connection if it is closed
 - [x] Possibility to listen for any server events without big switch statements in onMessage via facebooks fbemitter
-- [x] Automatically parsing of payload data
+- [x] Automatically parsing of payload data (when using the default message handler)
 - [x] Cross browser compatible* (at least with all browsers that support WebSockets :))
 
+---
+
 ## Missing features
-- [ ] Binary data support has not been tested
+- [ ] Binary data support has not been implemented (in the default listener only!)
+
+---
 
 ## Compatibility
 - [x] Google Chrome
@@ -21,6 +25,8 @@ It adds some often needed functionality like
 - [x] Mozilla Firefox
 - [x] Microsoft Edge
 - [x] Microsoft Internet Explorer (10, 11)
+
+---
 
 ## Installation
 There are two possibilities to use the client:
@@ -30,12 +36,14 @@ Just add the file dist/browser.js into your url to make window.WsClientEvented a
 
 Example:
 ```html
-<script src="wsclient-evented/dist/browser.js"></script>
+<script src="wsclient-evented/dist/wsclientevented.js"></script>
 <script>
 var wsClient = new WsClientEvented('ws://url');
 wsClient.send('x');
 </script>
 ```
+
+---
 
 #### ES2015 import
 If you are using webpack or native ES2015 imports, you may use the client like this:
@@ -46,9 +54,13 @@ let wsClient = new WsClient('ws://url');
 wsClient.send('x');
 ```
 
+---
+
 ### Examples
 You can see a working example in ```lib/index.html```.
 This example connects to a node.js WebSocket server that is configured to listen for the configured message format. Just use ```npm run test:watch``` to see the connect and event firing happen via your favorite webdeveloper console tool.
+
+---
 
 ### Usage
 The constructor expects the following arguments:
@@ -68,7 +80,7 @@ The following options are available:
 ```javascript
 bool autoOpen [default: true] Automatically connect the WebSocket on initialisation?
 bool autoReconnect [default: true] Automatically reconnect the WebSocket if connection is lost?
-bool forceCloseOnReload [default: false] Send a forced close on browser reload?
+bool forceCloseOnReload [default: false] Send a forced close on browser reload? **Only available when using the client in the main thread!**
 bool debug [default: false] Show debug output?
 int reconnectInterval [default: 1000] Delay in ms for reconnect tries
 float reconnectDecay [default 1.5] Factor for reconnects
@@ -80,11 +92,13 @@ int maxReconnectTimeout [default: 5000] Maximal amount of milliseconds to wait f
 int maxSendTries [default: 10] Maximal amount of tries for ws send to fail for the same request
 function onBeforeWsOpen [default: null] Called before WebSocket connections are established
 function onWsOpen [default: null] Called when a WebSocket connection becomes ready
-function onWsMessage [default: null] Called on all WebSocket onMessage events
+function onWsMessage [default: defaultMessageHandler] Called on all WebSocket onMessage events. Defaults to emitting via fbemitter
 function onWsClose [default: null] Called when a WebSocket connection is closed
 function onWsError [default: null] Called when a WebSocket connection throws errors
 function onWsTimeout [default: null] Called when a WebSocket connection times out
 ```
+
+---
 
 ### Methods
 The following methods are available for usage after a new wsclient-evented was created.
@@ -102,8 +116,12 @@ ws.addListener('test-response', function(eventType, wsEvent, data) {
 });
 ```
 
+---
+
 #### removeListener(string evt):
 Removes all events named ```evt``` from the WebSockets onMessage listener.
+
+---
 
 #### send(string type, object payload[optional]):
 Sends a message of type ```type``` with a payload of ```payload```.
@@ -111,9 +129,11 @@ Payload may be any json serializeable object or omitted to send an empty message
 This method will automatically try to reconnect the WebSocket if it is not connected before sending.
 The amount of send tries can be configured via ```options.maxSendTries```.
 
+---
+
 ##### wsclient-evented websocket message format:
 The client sends a special format when using text type messages.
-It is currently defined like this:
+It is currently defined like this for the default message handler:
 ```javascript
 {
   type: type,
@@ -149,18 +169,60 @@ connection.on('message', (msg) => {
 // ... snip
 ```
 
+---
+
 #### open(bool reconnecting[optional]):
 The open function will open a new WebSocket connection to the specified host.
 It also sets up listeners for opening/closing and timeouts.
 Automatically called when ```options.autoOpen``` is set to true (the default).
 The flag reconnecting indicates a automatic reconnection attempt if the WebSocket closes unexpectedly.
 
+---
+
 #### close(int code[optional], string reason[optional]):
 Closes the WebSocket. Will also make sure the socket does not automatically reconnect if ```options.autoReconnect``` is set to true (the default).
 After closing the WebSocket, you will have to manually call wsclient-evented#open to connect the socket again.
 
+---
+
+## Defining own message handlers
+
+The provided default message handler will just allow json in a particular format to be used. It is defined like this:
+
+```javascript
+/**
+ * Default regular emitter
+ * @param {MessageEvent} e Original websocket event
+ * @param {WsClientEvented} instance
+ */
+const defaultMessageHandler = (e, instance) => {
+  console.log('called orig bound baby!', e, instance, 'fuck!');
+  const data = JSON.parse(e.data);
+  const responseType = typeof data;
+
+  if (responseType === 'object' && data.type) {
+    instance.emitter.emit(data.type, e, data);
+  }
+};
+```
+
+You may override it by adding your own implementation of `onWsMessage` as option when instanciating a new client:
+
+```javascript
+const instance = new WsClientEvented('ws://', null, {
+  onWsMessage: (evt, instance) => {
+    console.log(evt, instance);
+    instance.emitter.emit(evt.MY_CUSTOM_PAYLOAD_NAME, evt.data);
+  }
+});
+```
+
+---
+
 ### Special thanks
 This client would not have been possible without the work of [Joe Walnes](https://github.com/joewalnes) who build [reconnecting-websocket](https://github.com/joewalnes/reconnecting-websocket). Check out this project if you need a much lighter, lower level version of what I try to accomplish.
+
+---
 
 ### Licence
 [MIT license](http://opensource.org/licenses/MIT)

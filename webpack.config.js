@@ -1,43 +1,27 @@
-'use strict';
+/* eslint no-confusing-arrow: 0 */
+const path = require('path');
 
-var path = require('path');
-var args = require('minimist')(process.argv.slice(2));
-
-// List of allowed environments
-var allowedEnvs = ['dist', 'test'];
-
-// Set the correct environment
-var env;
-if(args._.length > 0 && args._.indexOf('start') !== -1) {
-  env = 'test';
-} else {
-  env = 'dist';
-}
-
-// Get available configurations
-var configs = {
-  dist: require(path.join(__dirname, 'cfg/dist')),
-  test: require(path.join(__dirname, 'cfg/test'))
+module.exports = {
+  devtool: 'sourcemap',
+  entry: path.join(__dirname, 'lib/browser.js'),
+  mode: 'production',
+  module: {
+    rules: [
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        include: path.join(__dirname, 'lib'),
+        loader: 'eslint-loader',
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        include: path.join(__dirname, 'lib'),
+      },
+    ],
+  },
+  output: {
+    filename: chunkData => chunkData.chunk.name === 'main' ? 'wsclientevented.js' : '[name].js',
+    path: path.join(__dirname, 'dist'),
+  },
 };
-
-/**
- * Get an allowed environment
- * @param  {String}  env
- * @return {String}
- */
-function getValidEnv(env) {
-  var isValid = env && env.length > 0 && allowedEnvs.indexOf(env) !== -1;
-  return isValid ? env : 'test';
-}
-
-/**
- * Build the webpack configuration
- * @param  {String} env Environment to use
- * @return {Object} Webpack config
- */
-function buildConfig(env) {
-  var usedEnv = getValidEnv(env);
-  return configs[usedEnv];
-}
-
-module.exports = buildConfig(env);
