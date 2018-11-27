@@ -3,6 +3,10 @@
   "version": "2.0.0",
   "description": "Simple Websocket Client with Event support",
   "main": "lib/index.js",
+  "files": [
+    "lib/index.js",
+    "dist/wsclientevented.js"
+  ],
   "scripts": {
     "dist": "webpack",
     "lint": "eslint ./lib",
