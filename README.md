@@ -95,6 +95,7 @@ function onWsOpen [default: null] Called when a WebSocket connection becomes rea
 function onWsMessage [default: defaultMessageHandler] Called on all WebSocket onMessage events. Defaults to emitting via fbemitter
 function onWsClose [default: null] Called when a WebSocket connection is closed
 function onWsError [default: null] Called when a WebSocket connection throws errors
+function onMaxReconnects [default: null] Called when the maximal amount of reconnects is reached
 function onWsTimeout [default: null] Called when a WebSocket connection times out
 ```
 
