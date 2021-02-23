@@ -1,3 +1,6 @@
+# 2.2.0
+1. Upgraded `fbemitter` to latest version 3.0.0.
+
 # 2.1.0
 1. Upgraded dev packages to latest stable versions
 2. Added new callback `onMaxReconnects` that fires after timeouts
