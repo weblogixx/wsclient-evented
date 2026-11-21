@@ -1,3 +1,14 @@
+# 2.3.0
+1. Removed all runtime dependencies: `fbemitter` is replaced by a small built-in emitter with the same API.
+2. Fixed connections without a subprotocol: the client requested a subprotocol named `"null"`, which made browsers fail against servers that don't select one.
+3. Fixed a crash on `null` messages from the server.
+4. Server messages can no longer trigger lifecycle callbacks by using their name as `type` (`onWsMessage` caused an infinite recursion).
+5. Fixed `close()` during a reconnect wait: the client reconnected anyway, and skipped the next automatic reconnect.
+6. Added TypeScript types.
+7. Replaced the development toolchain: `node:test`, esbuild, Babel (for the ES5 bundle only) and oxlint.
+8. `dist` is no longer checked in and gets built when packing.
+9. Rewrote the README.
+
 # 2.2.0
 1. Upgraded `fbemitter` to latest version 3.0.0.
 

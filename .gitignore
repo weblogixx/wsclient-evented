@@ -28,3 +28,6 @@ node_modules
 
 # Ignore coverage reports
 coverage
+
+# Build output, created on npm pack / publish
+dist

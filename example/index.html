@@ -6,9 +6,9 @@
     <script src="wsclientevented.js"></script>
   </head>
   <body>
-    Hello!
+    <p>Open the browser console to see what's happening.</p>
     <script>
-    var ws = new WsClientEvented('ws://localhost:9999', 'wsclient-evented-protocol', {
+    var ws = new WsClientEvented('ws://localhost:9999', null, {
       debug: true,
       timeoutInterval: 1000,
       onBeforeWsOpen: function() {
@@ -16,19 +16,15 @@
       },
       onWsTimeout: function() {
         console.log('onWsTimeout called!');
-      },
-      RENAME_TO_onWsMessage: function(e, instance) {
-        console.log('own implementation', e, instance);
       }
     });
 
-    ws.addListener('test-response', function() {
-        console.log('Test response set up correctly with following args: ', arguments);
+    ws.addListener('test-response', function(event, message) {
+        console.log('Received test response:', message);
       })
       .send('test', {
         ping: 'pong'
       });
-    // console.log(ws);
     </script>
   </body>
 </html>
